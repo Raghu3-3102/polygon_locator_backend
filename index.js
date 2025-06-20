@@ -2,32 +2,17 @@ import express from "express";
 import "dotenv/config";
 import connectDB from "./config/DBConfig.js";
 import router from "./routes/index.js";
-import compression from 'compression';
 import cors from "cors";
-import xss from "xss-clean"
-import mongoSanitize from "express-mongo-sanitize";
 import helmet from'helmet';
 import { apiLimiter } from "./config/rateLimiter.js";
 const app = express();
 const PORT = process.env.PORT;
-
-//Turn off Express's x-powered-by header
-app.disable("x-powered-by");
 
 // Security middleware
 app.use(helmet());
 
 // Enable CORS
 app.use(cors());
-
-//Enable xss-clean
-app.use(xss());
-
-//Sanitize inputs mongo-sanitize
-app.use(mongoSanitize());
-
-// Enable compression
-app.use(compression());
 
 // Parse incoming requests with JSON payloads
 app.use(express.json({ limit:'10mb' }));
