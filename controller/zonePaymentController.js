@@ -12,9 +12,19 @@ import { point as turfPoint, booleanPointInPolygon } from "@turf/turf";
 import dotenv from "dotenv";
 dotenv.config();
 
+
 export const initiateZonePayment = async (req, res) => {
   try {
-    const { lat, lng, email } = req.body;
+    const {
+      lat,
+      lng,
+      name,
+      email,
+      phoneNumber,
+      dob,
+      serviceNeeded,
+      address
+    } = req.body;
 
     const userPoint = turfPoint([lng, lat]);
     console.log("📍 User Point:", userPoint);
@@ -56,9 +66,6 @@ export const initiateZonePayment = async (req, res) => {
       key_secret: vendorSecret
     });
 
-    console.log("✅ Razorpay initialized");
-    console.log("🧾 Creating Razorpay order for amount:", basePrice * 100);
-
     const razorpayOrder = await razorpay.orders.create({
       amount: basePrice * 100, // amount in paise
       currency: "INR",
@@ -68,7 +75,12 @@ export const initiateZonePayment = async (req, res) => {
     console.log("🆔 Razorpay Order Created:", razorpayOrder.id);
 
     const transaction = await PaymentTransaction.create({
-      email: email,
+      name,
+      email,
+      phoneNumber,
+      dob,
+      serviceNeeded,
+      address,
       zoneId: matchedZone._id,
       amount: basePrice,
       razorpayOrderId: razorpayOrder.id,
@@ -95,7 +107,8 @@ export const initiateZonePayment = async (req, res) => {
 
 
 
- const confirmZonePayment = async (req, res) => {
+
+const confirmZonePayment = async (req, res) => {
   try {
     const {
       razorpayOrderId,
@@ -104,11 +117,13 @@ export const initiateZonePayment = async (req, res) => {
       transactionId
     } = req.body;
 
+    // Validate transaction ID
     const transaction = await PaymentTransaction.findById(transactionId);
     if (!transaction) {
       return res.status(404).json({ error: "Transaction not found" });
     }
 
+    // Validate signature
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_SECRET)
       .update(`${razorpayOrderId}|${razorpayPaymentId}`)
@@ -117,23 +132,74 @@ export const initiateZonePayment = async (req, res) => {
     if (expectedSignature !== razorpaySignature) {
       transaction.paymentStatus = "Failed";
       await transaction.save();
-      return res.status(400).json({ error: "Invalid signature" });
+
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Razorpay signature",
+        transactionId
+      });
     }
 
+    // Payment verified, update transaction
     transaction.razorpayPaymentId = razorpayPaymentId;
     transaction.razorpaySignature = razorpaySignature;
     transaction.paymentStatus = "Paid";
     await transaction.save();
 
-    res.json({
+    res.status(200).json({
       success: true,
-      message: "Payment successful",
+      message: "Payment verified and recorded successfully",
       transaction
     });
+
   } catch (err) {
-    console.error("Zone payment confirmation error:", err.message);
+    console.error("❌ Payment confirmation error:", err.message);
     res.status(500).json({ error: "Payment confirmation failed" });
   }
 };
 
-export default {initiateZonePayment,confirmZonePayment}
+const getAllPayments = async (req, res) => {
+  try {
+    const transactions = await PaymentTransaction.find().populate("zoneId");
+    
+    res.status(200).json({
+      success: true,
+      count: transactions.length,
+      data: transactions
+    });
+  } catch (error) {
+    console.error("❌ Error fetching payments:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch payment transactions"
+    });
+  }
+};
+
+ const getPaymentByTransactionId = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const transaction = await PaymentTransaction.findById(id).populate("zoneId");
+
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        message: "Transaction not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: transaction
+    });
+
+  } catch (error) {
+    console.error("❌ Error fetching transaction:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch transaction"
+    });
+  }
+};
+export default {initiateZonePayment,confirmZonePayment,getAllPayments,getPaymentByTransactionId}
