@@ -1,46 +1,25 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import dotenv from "dotenv";
 import Zone from "../models/Zone.js";
 import PaymentTransaction from "../models/PaymentTransaction.model.js";
 import { point as turfPoint, booleanPointInPolygon } from "@turf/turf";
 
-// import Razorpay from "razorpay";
-// import { point as turfPoint } from "@turf/helpers";
-// import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
-// import Zone from "../models/Zone.model.js"; // adjust the path as per your project
-// import PaymentTransaction from "../models/PaymentTransaction.model.js"; // adjust path too
-import dotenv from "dotenv";
 dotenv.config();
-
 
 export const initiateZonePayment = async (req, res) => {
   try {
     const {
-      lat,
-      lng,
-      name,
-      email,
-      phoneNumber,
-      dob,
-      serviceNeeded,
-      address
+      lat, lng, name, email, phoneNumber, dob,
+      serviceNeeded, address
     } = req.body;
 
     const userPoint = turfPoint([lng, lat]);
-    console.log("📍 User Point:", userPoint);
-
     const zones = await Zone.find();
-    console.log("📦 Available Zones:", zones.length);
 
     let matchedZone = null;
-
     for (const zone of zones) {
-      const polygonFeature = {
-        type: "Feature",
-        geometry: zone.geometry,
-      };
-
-      if (booleanPointInPolygon(userPoint, polygonFeature)) {
+      if (booleanPointInPolygon(userPoint, { type: "Feature", geometry: zone.geometry })) {
         matchedZone = zone;
         break;
       }
@@ -51,28 +30,17 @@ export const initiateZonePayment = async (req, res) => {
     }
 
     const basePrice = matchedZone.properties[0]?.price || 0;
-    console.log("💰 Base Price:", basePrice);
-
-    const vendorKey = process.env.RAZORPAY_KEY_ID;
-    const vendorSecret = process.env.RAZORPAY_SECRET;
-
-    if (!vendorKey || !vendorSecret) {
-      console.error("❌ Razorpay credentials missing in .env");
-      return res.status(500).json({ error: "Payment service configuration error" });
-    }
 
     const razorpay = new Razorpay({
-      key_id: vendorKey,
-      key_secret: vendorSecret
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_SECRET
     });
 
     const razorpayOrder = await razorpay.orders.create({
-      amount: basePrice * 100, // amount in paise
+      amount: basePrice * 100,
       currency: "INR",
       receipt: `zone_order_${Date.now()}`
     });
-
-    console.log("🆔 Razorpay Order Created:", razorpayOrder.id);
 
     const transaction = await PaymentTransaction.create({
       name,
@@ -84,10 +52,12 @@ export const initiateZonePayment = async (req, res) => {
       zoneId: matchedZone._id,
       amount: basePrice,
       razorpayOrderId: razorpayOrder.id,
-      paymentStatus: "Pending"
+      currency: "INR",
+      paymentStatus: "Pending",
+      status: "created",
+      created_at: Math.floor(Date.now() / 1000),
+      flow: "web"
     });
-
-    console.log("💾 Transaction saved:", transaction._id);
 
     res.json({
       success: true,
@@ -98,17 +68,12 @@ export const initiateZonePayment = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("🔥 Zone payment initiation error:", err);
-    res.status(500).json({ error: "Failed to initiate payment", message: err?.message });
+    console.error("🔥 Payment initiation error:", err);
+    res.status(500).json({ error: "Failed to initiate payment" });
   }
 };
 
-
-
-
-
-
-const confirmZonePayment = async (req, res) => {
+export const confirmZonePayment = async (req, res) => {
   try {
     const {
       razorpayOrderId,
@@ -117,13 +82,11 @@ const confirmZonePayment = async (req, res) => {
       transactionId
     } = req.body;
 
-    // Validate transaction ID
     const transaction = await PaymentTransaction.findById(transactionId);
     if (!transaction) {
       return res.status(404).json({ error: "Transaction not found" });
     }
 
-    // Validate signature
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_SECRET)
       .update(`${razorpayOrderId}|${razorpayPaymentId}`)
@@ -132,31 +95,63 @@ const confirmZonePayment = async (req, res) => {
     if (expectedSignature !== razorpaySignature) {
       transaction.paymentStatus = "Failed";
       await transaction.save();
-
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Razorpay signature",
-        transactionId
-      });
+      return res.status(400).json({ error: "Invalid Razorpay signature" });
     }
 
-    // Payment verified, update transaction
-    transaction.razorpayPaymentId = razorpayPaymentId;
-    transaction.razorpaySignature = razorpaySignature;
-    transaction.paymentStatus = "Paid";
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_SECRET
+    });
+
+    const paymentDetails = await razorpay.payments.fetch(razorpayPaymentId);
+
+    Object.assign(transaction, {
+      razorpayPaymentId,
+      razorpaySignature,
+      paymentStatus: "Paid",
+
+      razorpayId: paymentDetails.id, // safer than using 'id'
+      status: paymentDetails.status,
+      method: paymentDetails.method,
+      amount_refunded: paymentDetails.amount_refunded,
+      amount_transferred: paymentDetails.amount_transferred,
+      refund_status: paymentDetails.refund_status,
+      captured: paymentDetails.captured,
+      description: paymentDetails.description,
+      card_id: paymentDetails.card_id,
+      card: paymentDetails.card,
+      bank: paymentDetails.bank,
+      wallet: paymentDetails.wallet,
+      vpa: paymentDetails.vpa,
+      contact: paymentDetails.contact,
+      notes: paymentDetails.notes,
+      fee: paymentDetails.fee,
+      tax: paymentDetails.tax,
+      error_code: paymentDetails.error_code,
+      error_description: paymentDetails.error_description,
+      created_at: paymentDetails.created_at,
+      card_type: paymentDetails.card?.type || null,
+      card_network: paymentDetails.card?.network || null,
+      Auth_code: paymentDetails.acquirer_data?.auth_code || null,
+      Payments_ARN: paymentDetails.acquirer_data?.arn || null,
+      Payments_RRN: paymentDetails.acquirer_data?.rrn || null,
+      flow: paymentDetails.flow
+    });
+
     await transaction.save();
 
-    res.status(200).json({
+    res.json({
       success: true,
-      message: "Payment verified and recorded successfully",
+      message: "Payment confirmed",
       transaction
     });
 
   } catch (err) {
-    console.error("❌ Payment confirmation error:", err.message);
+    console.error("❌ Confirm payment error:", err.message);
     res.status(500).json({ error: "Payment confirmation failed" });
   }
 };
+
 
 const getAllPayments = async (req, res) => {
   try {
