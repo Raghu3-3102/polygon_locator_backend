@@ -11,7 +11,7 @@ export const initiateZonePayment = async (req, res) => {
   try {
     const {
       lat, lng, name, email, phoneNumber, dob,
-      serviceNeeded, address
+      serviceNeeded, address, amount
     } = req.body;
 
     const userPoint = turfPoint([lng, lat]);
@@ -31,7 +31,7 @@ export const initiateZonePayment = async (req, res) => {
       });
     }
 
-    const basePrice = matchedZone.properties[0]?.price || 0;
+    const basePrice = amount;
 
     const razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
