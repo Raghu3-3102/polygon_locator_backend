@@ -26,7 +26,9 @@ export const initiateZonePayment = async (req, res) => {
     }
 
     if (!matchedZone) {
-      return res.status(400).json({ error: "No active zone for this location" });
+      return res.status(400).json({success: false,
+        error: "No active zone for this location"
+      });
     }
 
     const basePrice = matchedZone.properties[0]?.price || 0;
@@ -69,7 +71,10 @@ export const initiateZonePayment = async (req, res) => {
 
   } catch (err) {
     console.error("🔥 Payment initiation error:", err);
-    res.status(500).json({ error: "Failed to initiate payment" });
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to initiate payment",
+      message: err.message });
   }
 };
 
@@ -95,7 +100,10 @@ export const confirmZonePayment = async (req, res) => {
     if (expectedSignature !== razorpaySignature) {
       transaction.paymentStatus = "Failed";
       await transaction.save();
-      return res.status(400).json({ error: "Invalid Razorpay signature" });
+      return res.status(400).json({ 
+        success: false,
+        error: "Invalid Razorpay signature" 
+      });
     }
 
     const razorpay = new Razorpay({
@@ -148,7 +156,11 @@ export const confirmZonePayment = async (req, res) => {
 
   } catch (err) {
     console.error("❌ Confirm payment error:", err.message);
-    res.status(500).json({ error: "Payment confirmation failed" });
+    res.status(500).json({ 
+      success: false,
+      error: "Payment confirmation failed"
+      
+     });
   }
 };
 
