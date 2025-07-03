@@ -8,6 +8,9 @@ import { apiLimiter } from "./config/rateLimiter.js";
 const app = express();
 const PORT = process.env.PORT;
 
+//trust proxy
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 
