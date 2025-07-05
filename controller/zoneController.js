@@ -45,21 +45,20 @@ const checkLocation = async (req, res) => {
 const importKML = async (req, res) => {
   try {
     const kmlBuffer = req.file?.buffer;
-    const zonesInput = req.body?.zones;
+    const propertiesInput = req.body?.properties;
 
-    if (!kmlBuffer || !zonesInput) {
-      return res.status(400).json({ error: "Missing file or zones data" });
+    if (!kmlBuffer || !propertiesInput) {
+      return res.status(400).json({ error: "Missing file or properties data" });
     }
 
-    // Parse zones JSON from string
-    let zonesMetadata;
+    // Parse the shared properties
+    let sharedProperties;
     try {
-      zonesMetadata = JSON.parse(zonesInput);
+      sharedProperties = JSON.parse(propertiesInput);
     } catch (err) {
-      return res.status(400).json({ error: "Invalid JSON in 'zones'" });
+      return res.status(400).json({ error: "Invalid JSON in 'properties'" });
     }
 
-    // Convert buffer to string and parse into DOM
     const kmlText = kmlBuffer.toString("utf-8");
     const kmlDoc = new DOMParser().parseFromString(kmlText);
     const geojson = convertToGeoJSON(kmlDoc);
@@ -72,19 +71,14 @@ const importKML = async (req, res) => {
       return res.status(400).json({ error: "No valid polygons found in KML" });
     }
 
-    // Clear existing zones (optional)
+    // Optional: Clear existing zones
     await Zone.deleteMany();
 
     const createZones = features.map((feature, index) => {
-      const zoneName = feature.properties?.name || `Zone-${index + 1}`;
-
-      if (!zonesMetadata[zoneName]) {
-        throw new Error(`Missing properties for zone: ${zoneName}`);
-      }
-
+      const zoneName = `Zone-${index + 1}`;
       return Zone.create({
         zone: zoneName,
-        properties: zonesMetadata[zoneName],
+        properties: sharedProperties,
         geometry: feature.geometry,
       });
     });
@@ -97,5 +91,6 @@ const importKML = async (req, res) => {
     res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 };
+
 
 export default {checkLocation,importKML}
