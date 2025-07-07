@@ -24,6 +24,7 @@ const checkLocation = async (req, res) => {
       if (booleanPointInPolygon(userPoint, polygonFeature)) {
         return res.json({
           matched: true,
+          id: zone._id,
           zone: zone.zone,
           properties: zone.properties,
         });
