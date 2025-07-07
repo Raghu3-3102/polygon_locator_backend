@@ -10,26 +10,41 @@ dotenv.config();
 export const initiateZonePayment = async (req, res) => {
   try {
     const {
-      lat, lng, name, email, phoneNumber, dob,
-      serviceNeeded, address, amount
+       name, email, phoneNumber, dob,
+      serviceNeeded, address, amount,zoneId,
+      planId // contains full plan info
     } = req.body;
 
-    const userPoint = turfPoint([lng, lat]);
-    const zones = await Zone.find();
-
-    let matchedZone = null;
-    for (const zone of zones) {
-      if (booleanPointInPolygon(userPoint, { type: "Feature", geometry: zone.geometry })) {
-        matchedZone = zone;
-        break;
-      }
+    if (!name || !email || !phoneNumber || !dob || !serviceNeeded || !address || !amount || !zoneId || !planId) {
+      return res.status(400).json({
+        success: false,
+        error: "All fields are required"
+      })
     }
 
+    // Validate the zoneId
+    const matchedZone = await Zone.findById(zoneId);
     if (!matchedZone) {
-      return res.status(400).json({success: false,
-        error: "No active zone for this location"
+      return res.status(404).json({
+        success: false,
+        error: "Zone not found"
+      });
+
+    }
+
+   // 2️⃣ Validate planId inside zone.properties
+    const matchedPlan = matchedZone.properties.find(plan =>
+      plan._id.toString() === planId 
+    );
+
+    if (!matchedPlan) {
+      return res.status(404).json({
+        success: false,
+        error: "Plan not found in the specified zone"
       });
     }
+    console.log("Matched Plan:", matchedPlan);
+
 
     const basePrice = amount;
 
@@ -52,6 +67,7 @@ export const initiateZonePayment = async (req, res) => {
       serviceNeeded,
       address,
       zoneId: matchedZone._id,
+      planId:matchedPlan._id, // Store the plan ID
       amount: basePrice,
       razorpayOrderId: razorpayOrder.id,
       currency: "INR",
