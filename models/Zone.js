@@ -1,14 +1,21 @@
 // backend/models/Zone.js
 import mongoose from "mongoose";
 
+const planSchema = new mongoose.Schema(
+  {
+    "SrNo": Number,
+    "Plan Name": String,
+    "Duration": String,
+    "MRP": Number,
+    "Primary Upload Speed (Mbps)": Number,
+    "Primary Download Speed (Mbps)": Number,
+  },
+  { _id: false }
+);
+
 const zoneSchema = new mongoose.Schema({
   zone: { type: String, required: true },
-  properties: [
-    {
-      price: Number,
-      speed: String,
-    },
-  ],
+  properties: [planSchema],
   geometry: {
     type: {
       type: String,
@@ -22,6 +29,6 @@ const zoneSchema = new mongoose.Schema({
   },
 });
 
-zoneSchema.index({ geometry: "2dsphere" })
+zoneSchema.index({ geometry: "2dsphere" });
 
 export default mongoose.model("Zone", zoneSchema);

@@ -51,7 +51,6 @@ const importKML = async (req, res) => {
       return res.status(400).json({ error: "Missing file or properties data" });
     }
 
-    // Parse the shared properties
     let sharedProperties;
     try {
       sharedProperties = JSON.parse(propertiesInput);
@@ -71,11 +70,11 @@ const importKML = async (req, res) => {
       return res.status(400).json({ error: "No valid polygons found in KML" });
     }
 
-    // Optional: Clear existing zones
     await Zone.deleteMany();
 
     const createZones = features.map((feature, index) => {
       const zoneName = `Zone-${index + 1}`;
+
       return Zone.create({
         zone: zoneName,
         properties: sharedProperties,
@@ -91,6 +90,7 @@ const importKML = async (req, res) => {
     res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 };
+
 
 
 export default {checkLocation,importKML}
