@@ -209,4 +209,51 @@ const getAllPayments = async (req, res) => {
     });
   }
 };
-export default {initiateZonePayment,confirmZonePayment,getAllPayments,getPaymentByTransactionId}
+
+const editPaymentStatus = async (req,res) =>{
+
+  try {
+
+    const {id,paymentStatus} = req.params;
+
+    const transection = await PaymentTransaction.findById(id);
+    if (!transection) {
+      return res.status(404).json({
+        success: false,
+        message: "Transaction not found"
+      });
+    }
+    console.log("Editing payment status for transaction:", transection);
+
+    const validStatuses = ["Pending", "Paid", "Failed"];
+    if (!validStatuses.includes(paymentStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment status"
+      });
+    }
+
+    transection.paymentStatus = paymentStatus;
+    await transection.save();
+
+    res.status(200).json({
+      success:true,
+      message: "Payment status updated sucessfully",
+      data:transection
+    })
+
+    
+
+    
+  } catch (error) {
+    console.error("❌ Error editing payment status:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to edit payment status"
+    });
+    
+  }
+
+}
+export default {initiateZonePayment,confirmZonePayment,getAllPayments,getPaymentByTransactionId,editPaymentStatus}
+
