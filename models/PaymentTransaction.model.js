@@ -11,6 +11,7 @@ const paymentTransactionSchema = new mongoose.Schema({
 
   // 🗺️ Zone Info
   zoneId: { type: mongoose.Schema.Types.ObjectId, ref: "Zone" },
+  planId: { type: mongoose.Schema.Types.ObjectId, require:true }, // Store the plan ID
 
   // 💳 Razorpay Core Info
   razorpayOrderId: String,
