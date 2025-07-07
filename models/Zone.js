@@ -9,8 +9,7 @@ const planSchema = new mongoose.Schema(
     "MRP": Number,
     "Primary Upload Speed (Mbps)": Number,
     "Primary Download Speed (Mbps)": Number,
-  },
-  { _id: false }
+  }
 );
 
 const zoneSchema = new mongoose.Schema({
