@@ -183,10 +183,22 @@ export const confirmZonePayment = async (req, res) => {
 
 const getAllPayments = async (req, res) => {
   try {
-    const transactions = await PaymentTransaction.find().populate("zoneId");
-    
+    const { page = 1, limit = 10 } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    const total = await PaymentTransaction.countDocuments();
+    const transactions = await PaymentTransaction.find()
+      .populate("zoneId")
+      .sort({ createdAt: -1 }) // optional: sort latest first
+      .skip(parseInt(skip))
+      .limit(parseInt(limit));
+
     res.status(200).json({
       success: true,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(total / limit),
+      totalRecords: total,
       count: transactions.length,
       data: transactions
     });
@@ -198,6 +210,7 @@ const getAllPayments = async (req, res) => {
     });
   }
 };
+
 
  const getPaymentByTransactionId = async (req, res) => {
   try {
