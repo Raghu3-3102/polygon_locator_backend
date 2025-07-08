@@ -2,6 +2,8 @@ import express from "express";
 const router = express.Router();
 import zonePaymentController from "../../controller/zonePaymentController.js";
 import PaymentFilterController from "../../controller/PaymentFilterController.js";
+import protect from "../../middleware/authMiddleware.js";
+
 
 router.post("/initiate", zonePaymentController.initiateZonePayment);
 router.post("/confirm", zonePaymentController.confirmZonePayment);
