@@ -9,6 +9,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+//signup Flow
+
 const signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -18,7 +20,7 @@ const signup = async (req, res) => {
 
     const otp = generateOTP();
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
-
+   
     
 
     const tempUser = await PendingUser.create({
@@ -72,6 +74,35 @@ const verifyOtp = async (req, res) => {
   }
 };
 
+const ResendSignUpOtp = async (req, res) => {
+  try {
+
+    const { tempUserId } = req.body;
+    const pendingUser = await PendingUser.findById(tempUserId);
+    if (!pendingUser) return res.status(400).json({ error: "Invalid user" });
+
+       const otp = generateOTP();
+       const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+
+        await sendEmail(pendingUser.email, otp, process.env.MAIL_USER, process.env.MAIL_PASS);
+
+    pendingUser.otp = otp;
+    pendingUser.otpExpiresAt = otpExpiresAt;
+
+    await pendingUser.save();
+
+    res.status(200).json({ success: true, message: "OTP resent successfully" });
+
+    
+  } catch (error) {
+    console.error("Resend OTP error:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+    
+  }
+}
+
+
+// Login Flow
 
 
 export const login = async (req, res) => {
@@ -113,6 +144,8 @@ export const login = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+// Forgot Password Flow
 
 export const forgotPassword = async (req, res) => {
   try {
@@ -193,7 +226,43 @@ export const resetPassword = async (req, res) => {
   }
 };
 
+export const resendForgotPasseordOtp = async (req, res) =>{
+
+  try {
+
+    const { email } = req.body;
+
+    const record = await ForgotPaaswordPendingUser.findOne({email});
+    if (!record) return res.status(400).json({ error: "No OTP request found" });
+    if (record.isVerified) {
+      return res.status(400).json({ error: "OTP already verified" });
+    }
+    const otp = generateOTP();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+    await sendEmail(email, otp, process.env.MAIL_USER, process.env.MAIL_PASS);
+
+    // Update the record with new OTP and expiration time
+    record.otp = otp;
+    record.otpExpiresAt = otpExpiresAt;
+
+    record.isVerified = false; // reset verification status
+
+    // Save the updated record
+    await record.save();
+
+    res.status(200).json({ success: true, message: "OTP resent successfully" });
+    
+    
+  } catch (error) {
+    console.error("Resend Forgot Password OTP error:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+    
+  }
+
+}
 
 
 
-export default { signup, verifyOtp ,login,forgotPassword,verifyForgotOtp,resetPassword};
+
+export default { signup, verifyOtp ,login,forgotPassword,verifyForgotOtp,resetPassword,ResendSignUpOtp,resendForgotPasseordOtp};

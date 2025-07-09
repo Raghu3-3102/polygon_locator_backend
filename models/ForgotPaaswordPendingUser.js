@@ -10,9 +10,10 @@ const passwordResetSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  otpExpiresAt: {
+   otpExpiresAt: {
     type: Date,
-    required: true
+    required: true,
+    index: { expireAfterSeconds: 0 }  // ✅ Correct TTL setting
   },
   isVerified: {
     type: Boolean,
