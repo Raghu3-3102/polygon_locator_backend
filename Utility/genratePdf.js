@@ -46,11 +46,17 @@ import chromium from 'chrome-aws-lambda';
 import puppeteer from 'puppeteer-core';
 
 export const generatePDF = async (htmlContent) => {
+  const executablePath = await chromium.executablePath;
+
+  if (!executablePath) {
+    throw new Error('❌ No executablePath found — chrome-aws-lambda failed to resolve a Chromium binary.');
+  }
+
   const browser = await puppeteer.launch({
     args: chromium.args,
-    executablePath: await chromium.executablePath,
+    executablePath,
     headless: chromium.headless,
-    ignoreHTTPSErrors: true
+    ignoreHTTPSErrors: true,
   });
 
   const page = await browser.newPage();
@@ -63,11 +69,12 @@ export const generatePDF = async (htmlContent) => {
       top: '20px',
       bottom: '20px',
       left: '20px',
-      right: '20px'
-    }
+      right: '20px',
+    },
   });
 
   await browser.close();
   return pdfBuffer;
 };
+
 
