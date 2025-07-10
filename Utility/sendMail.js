@@ -21,7 +21,7 @@ export const sendEmail = async (to, html,EMAIL_USER,EMAIL_PASS,pdfBuffer) => {
     attachments: [
       {
         filename: "Airwire_Invoice.pdf",
-        path: pdfBuffer, // ✅ send file path here
+        content: pdfBuffer, // ✅ send file path here
         contentType: "application/pdf"
       }
     ]
@@ -51,7 +51,7 @@ export const sendFailedPaymentEmail = async (to, html,EMAIL_USER,EMAIL_PASS,pdfB
     attachments: [
       {
         filename: "Airwire_Invoice.pdf",
-        path: pdfBuffer, // ✅ send file path here
+        content: pdfBuffer, // ✅ send file path here
         contentType: "application/pdf"
       }
     ]
