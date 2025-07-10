@@ -42,21 +42,12 @@
 // };
 // 
 
-import chromium from 'chrome-aws-lambda';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 
 export const generatePDF = async (htmlContent) => {
-  const executablePath = await chromium.executablePath;
-
-  if (!executablePath) {
-    throw new Error('❌ No executablePath found — chrome-aws-lambda failed to resolve a Chromium binary.');
-  }
-
   const browser = await puppeteer.launch({
-    args: chromium.args,
-    executablePath,
-    headless: chromium.headless,
-    ignoreHTTPSErrors: true,
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
   const page = await browser.newPage();
@@ -76,5 +67,6 @@ export const generatePDF = async (htmlContent) => {
   await browser.close();
   return pdfBuffer;
 };
+
 
 
