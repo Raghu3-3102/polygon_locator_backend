@@ -42,31 +42,19 @@
 // };
 // 
 
-import puppeteer from 'puppeteer';
+// generatePDF.js
+import pdf from 'html-pdf-node';
 
 export const generatePDF = async (htmlContent) => {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
-
-  const page = await browser.newPage();
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-
-  const pdfBuffer = await page.pdf({
+  const file = { content: htmlContent };
+  const options = {
     format: 'A4',
-    printBackground: true,
-    margin: {
-      top: '20px',
-      bottom: '20px',
-      left: '20px',
-      right: '20px',
-    },
-  });
-
-  await browser.close();
-  return pdfBuffer;
+    printBackground: true
+  };
+  return await pdf.generatePdf(file, options);
 };
+
+
 
 
 

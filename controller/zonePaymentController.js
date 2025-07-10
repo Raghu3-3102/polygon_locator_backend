@@ -119,7 +119,7 @@ export const confirmZonePayment = async (req, res) => {
 
     if (expectedSignature !== razorpaySignature) {
       transaction.paymentStatus = "Failed";
-
+      console.log("Invalid Razorpay signature for transaction:", transactionId);
        await transaction.save();
 
       const failedPaymentText = FailedPayment(transaction.name, transaction.amount, transaction.razorpayOrderId);
