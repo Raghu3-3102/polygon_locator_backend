@@ -4,6 +4,10 @@ import dotenv from "dotenv";
 import Zone from "../models/Zone.js";
 import PaymentTransaction from "../models/PaymentTransaction.model.js";
 import { point as turfPoint, booleanPointInPolygon } from "@turf/turf";
+import { sendEmail,sendFailedPaymentEmail } from "../Utility/sendMail.js";
+import {sucessfullPayment,FailedPayment} from '../mailText/invoiceMailText.js'
+import {paymenInvoiceText,paymenInvoiceFailedText} from '../Utility/PymentInvoiceText.js'
+import {generatePDF} from "../Utility/genratePdf.js";
 
 dotenv.config();
 
@@ -115,7 +119,17 @@ export const confirmZonePayment = async (req, res) => {
 
     if (expectedSignature !== razorpaySignature) {
       transaction.paymentStatus = "Failed";
-      await transaction.save();
+
+       await transaction.save();
+
+      const failedPaymentText = FailedPayment(transaction.name, transaction.amount, transaction.razorpayOrderId);
+      const pdfText = paymenInvoiceFailedText(transaction);
+      const pdfBuffer = await generatePDF(pdfText);
+
+      await sendFailedPaymentEmail(transaction.email, failedPaymentText, process.env.MAIL_USER, process.env.MAIL_PASS, pdfBuffer);
+
+
+     
       return res.status(400).json({ 
         success: false,
         error: "Invalid Razorpay signature" 
@@ -164,11 +178,31 @@ export const confirmZonePayment = async (req, res) => {
 
     await transaction.save();
 
+    try {
+
+    const sendEmailtexts = sucessfullPayment(transaction.amount,transaction.name)
+    const pdfText = paymenInvoiceText(transaction)
+
+    const pdfBuffer = await generatePDF(pdfText);
+    console.log("PDF generated successfully",pdfBuffer);
+    // Send the PDF as an attachment
+
+    await sendEmail(transaction.email,sendEmailtexts ,process.env.MAIL_USER, process.env.MAIL_PASS ,pdfBuffer);
+    console.log("Email sent successfully");
+      
+    } catch (error) {
+    console.error("❌ Error sending email:", error.message);
+    // Handle email sending error, but don't block the payment confirmation
+    }
+
+   
     res.json({
       success: true,
       message: "Payment confirmed",
       transaction
     });
+
+    
 
   } catch (err) {
     console.error("❌ Confirm payment error:", err.message);
