@@ -42,24 +42,15 @@
 // };
 // 
 
+import chromium from 'chrome-aws-lambda';
+import puppeteer from 'puppeteer-core';
+
 export const generatePDF = async (htmlContent) => {
-  let puppeteer;
-  let executablePath;
-
-  if (process.env.NODE_ENV === 'production') {
-    const chromium = await import('chrome-aws-lambda');
-    puppeteer = (await import('puppeteer-core')).default;
-    executablePath = await chromium.executablePath || '/usr/bin/chromium-browser';
-  } else {
-    puppeteer = (await import('puppeteer')).default;
-    executablePath = puppeteer.executablePath();
-  }
-
   const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    executablePath,
-    headless: true,
-    ignoreHTTPSErrors: true,
+    args: chromium.args,
+    executablePath: await chromium.executablePath,
+    headless: chromium.headless,
+    ignoreHTTPSErrors: true
   });
 
   const page = await browser.newPage();
@@ -72,10 +63,11 @@ export const generatePDF = async (htmlContent) => {
       top: '20px',
       bottom: '20px',
       left: '20px',
-      right: '20px',
-    },
+      right: '20px'
+    }
   });
 
   await browser.close();
   return pdfBuffer;
 };
+
