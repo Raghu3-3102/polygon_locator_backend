@@ -1,3 +1,4 @@
+import { planepoint } from "@turf/turf";
 import mongoose from "mongoose";
 
 const paymentTransactionSchema = new mongoose.Schema({
@@ -8,10 +9,15 @@ const paymentTransactionSchema = new mongoose.Schema({
   dob: { type: String },
   serviceNeeded: { type: String, required: true },
   address: { type: String },
+  city: { type: String },
+  state: { type: String },
+  nation: { type: String },
+  zipCode: { type: String },
 
   // 🗺️ Zone Info
   zoneId: { type: mongoose.Schema.Types.ObjectId, ref: "Zone" },
   planId: { type: mongoose.Schema.Types.ObjectId, require:true }, // Store the plan ID
+  planName: { type: String, required: true }, // Store the plan name
 
   // 💳 Razorpay Core Info
   razorpayOrderId: String,

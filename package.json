@@ -13,9 +13,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ironsoftware/ironpdf": "^2025.6.8",
     "@tmcw/togeojson": "^7.1.2",
     "@turf/turf": "^7.2.0",
+    "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "compression": "^1.8.0",
     "cors": "^2.8.5",
@@ -32,7 +32,6 @@
     "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10",
     "path": "^0.12.7",
-    "puppeteer": "^24.12.1",
     "razorpay": "^2.9.6",
     "xmldom": "^0.6.0",
     "xss-clean": "^0.1.4"

@@ -8,13 +8,13 @@ import protect from "../../middleware/authMiddleware.js";
 router.post("/initiate", zonePaymentController.initiateZonePayment);
 router.post("/confirm", zonePaymentController.confirmZonePayment);
 router.get("/", zonePaymentController.getAllPayments);
-router.get("/:id",protect, zonePaymentController.getPaymentByTransactionId);
-router.put("/:id/:paymentStatus",protect, zonePaymentController.editPaymentStatus);
+router.get("/:id", zonePaymentController.getPaymentByTransactionId);
+router.put("/:id/:paymentStatus", zonePaymentController.editPaymentStatus);
 
-router.get("/filter/status",protect, PaymentFilterController.PaymentStatusFilterController);
-router.get("/filter/plan",protect, PaymentFilterController.PaymentServicePlancontroller);
-router.get("/filter/method",protect, PaymentFilterController.getFilteredPaymentData);
-router.get("/filter/status-and-method",protect, PaymentFilterController.getFilterdPymentByStatusAndMethod);
+router.get("/filter/status", PaymentFilterController.PaymentStatusFilterController);
+router.get("/filter/plan", PaymentFilterController.PaymentServicePlancontroller);
+router.get("/filter/method", PaymentFilterController.getFilteredPaymentData);
+router.get("/filter/status-and-method", PaymentFilterController.getFilterdPymentByStatusAndMethod);
 
 
 export default router;
