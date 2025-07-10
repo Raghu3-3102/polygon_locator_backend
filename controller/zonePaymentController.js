@@ -195,13 +195,13 @@ export const confirmZonePayment = async (req, res) => {
 // Build external API payload
     const externalPayload = {
     Request: {
-    requestDate: new Date().toISOString(),
-    extTransactionId: transaction._id.toString(),
+    requestDate: "2025-07-05T14:50:00",
+    extTransactionId: "0001",
     systemId: "priyads",
     password: "Priya@2025",
     UAN: "ggw0VGWp",
     UserType: "Staff"
-    },
+  },
      Funnel: {
     Name: transaction.name,
     Address: transaction.address,
@@ -222,6 +222,38 @@ export const confirmZonePayment = async (req, res) => {
     NotificationReceive: "True"
   }
 };
+
+
+// const externalPayload = {
+//   Request: {
+//     requestDate: "2025-07-05T14:50:00",
+//     extTransactionId: "0001",
+//     systemId: "priyads",
+//     password: "Priya@2025",
+//     UAN: "ggw0VGWp",
+//     UserType: "Staff"
+//   },
+//   Funnel: {
+//     Name: "Kaisher",
+//     Address: "HSR Layout road",
+//     ServiceType: "Broadband",
+//     City: "Benguluru",
+//     State: "Karnatka",
+//     Nation: "India",
+//     ZipCode: "380009",
+//     MobileNo: "7061409421",
+//     EMail: "cto@levontechno.com",
+//     Plan: "",
+//     ReferralUserId: "",
+//     ReferralEmployeeName: "",
+//     ReferralEmployeeID: "",
+//     ReferralMobile: "",
+//     Source: "",
+//     ReferralCompanyId: "",
+//     NotificationReceive: "True"
+//   }
+// };
+
 
 // Send the POST request
 try {
