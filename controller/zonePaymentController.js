@@ -125,6 +125,7 @@ export const confirmZonePayment = async (req, res) => {
       const failedPaymentText = FailedPayment(transaction.name, transaction.amount, transaction.razorpayOrderId);
       const pdfText = paymenInvoiceFailedText(transaction);
       const pdfBuffer = await generatePDF(pdfText);
+      console.log("PDF generated successfully",pdfBuffer);
 
       await sendFailedPaymentEmail(transaction.email, failedPaymentText, process.env.MAIL_USER, process.env.MAIL_PASS, pdfBuffer);
 

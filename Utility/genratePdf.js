@@ -42,22 +42,19 @@
 // };
 // 
 
-
-let puppeteer;
-let executablePath;
-console.log("NODE_ENV:", process.env.NODE_ENV);
-if (process.env.NODE_ENV === 'production') {
-  // ✅ On Render or Linux
-  const chromium = await import('chrome-aws-lambda');
-  puppeteer = await import('puppeteer-core');
-  executablePath = await chromium.executablePath;
-} else {
-  // ✅ On local dev (Windows/Mac)
-  puppeteer = await import('puppeteer');
-  executablePath = puppeteer.executablePath();
-}
-
 export const generatePDF = async (htmlContent) => {
+  let puppeteer;
+  let executablePath;
+
+  if (process.env.NODE_ENV === 'production') {
+    const chromium = await import('chrome-aws-lambda');
+    puppeteer = (await import('puppeteer-core')).default;
+    executablePath = await chromium.executablePath || '/usr/bin/chromium-browser';
+  } else {
+    puppeteer = (await import('puppeteer')).default;
+    executablePath = puppeteer.executablePath();
+  }
+
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
     executablePath,
@@ -82,4 +79,3 @@ export const generatePDF = async (htmlContent) => {
   await browser.close();
   return pdfBuffer;
 };
-
