@@ -17,69 +17,43 @@ dotenv.config();
 export const initiateZonePayment = async (req, res) => {
   try {
     const {
-       name, email, phoneNumber, dob,
-      serviceNeeded, address, amount,zoneId,
-      planId,city,state, nation,zipCode// contains full plan info
+      name, email, phoneNumber, dob,
+      serviceNeeded, address, amount,
+      city, state, nation, zipCode,
+      planDetails // Directly passed from frontend
     } = req.body;
 
-    if (!name || !email || !phoneNumber || !dob || !serviceNeeded || !address || !amount || !zoneId || !planId || !city || !state || !nation || !zipCode) {
+    // Validate required fields
+    if (!name || !email || !phoneNumber || !dob || !serviceNeeded || !address ||
+        !amount || !city || !state || !nation || !zipCode || !planDetails) {
       return res.status(400).json({
         success: false,
         error: "All fields are required"
-      })
-    }
-
-    //validate phone number 
-  const phoneRegex = /^[6-9]\d{9}$/;
-  const flagPhone =  phoneRegex.test(phoneNumber);
-
-  if (!flagPhone) {
-    res.status(400).json({ 
-      success: false,
-      error: "Phone number is invalid",
-       });
-    }
-    
-
-    // Validate the zoneId
-    const matchedZone = await Zone.findById(zoneId);
-    if (!matchedZone) {
-      return res.status(404).json({
-        success: false,
-        error: "Zone not found"
-      });
-
-    }
-
-   // 2️⃣ Validate planId inside zone.properties
-    const matchedPlan = matchedZone.properties.find(plan =>
-      plan._id.toString() === planId 
-    );
-
-    if (!matchedPlan) {
-      return res.status(404).json({
-        success: false,
-        error: "Plan not found in the specified zone"
       });
     }
-   
 
-    const planName = matchedPlan['Plan Name'];
-    
+    // Validate phone number
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      return res.status(400).json({
+        success: false,
+        error: "Phone number is invalid"
+      });
+    }
 
-    const basePrice = amount;
-
+    // Create Razorpay order
     const razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_SECRET
     });
 
     const razorpayOrder = await razorpay.orders.create({
-      amount: basePrice * 100,
+      amount: amount * 100,
       currency: "INR",
       receipt: `zone_order_${Date.now()}`
     });
 
+    // Save transaction directly
     const transaction = await PaymentTransaction.create({
       name,
       email,
@@ -91,35 +65,33 @@ export const initiateZonePayment = async (req, res) => {
       state,
       nation,
       zipCode,
-      zoneId: matchedZone._id,
-      planId:matchedPlan._id, // Store the plan ID
-      planName: planName, // Store the plan name
-      amount: basePrice,
+      amount,
       razorpayOrderId: razorpayOrder.id,
       currency: "INR",
       paymentStatus: "Pending",
       status: "created",
       created_at: Math.floor(Date.now() / 1000),
       flow: "web",
-      
+      planDetails
     });
 
     res.json({
       success: true,
-      zone: matchedZone.zone,
-      amount: basePrice,
+      amount,
       razorpayOrderId: razorpayOrder.id,
       transactionId: transaction._id
     });
 
   } catch (err) {
     console.error("🔥 Payment initiation error:", err);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: "Failed to initiate payment",
-      message: err.message });
+      message: err.message
+    });
   }
 };
+
 
 export const confirmZonePayment = async (req, res) => {
   try {
@@ -202,13 +174,13 @@ export const confirmZonePayment = async (req, res) => {
 
     await transaction.save();
 
-    
+    const planName = transaction.planDetails?.["Plan Name"] || "N/A"; // Extract plan name from planDetails
 
 // Build external API payload
     const externalPayload = {
     Request: {
-    requestDate: "2025-07-05T14:50:00",
-    extTransactionId: "0001",
+    requestDate: new Date().toISOString(),
+    extTransactionId: transactionId,
     systemId: "priyads",
     password: "Priya@2025",
     UAN: "ggw0VGWp",
@@ -224,7 +196,7 @@ export const confirmZonePayment = async (req, res) => {
     ZipCode: transaction.zipCode,
     MobileNo: transaction.phoneNumber,
     EMail: transaction.email,
-    Plan:transaction.planName, // or extract from planId if needed
+    Plan: planName || "N/A", // or extract from planId if needed
     ReferralUserId: "",
     ReferralEmployeeName: "",
     ReferralEmployeeID: "",
@@ -234,37 +206,6 @@ export const confirmZonePayment = async (req, res) => {
     NotificationReceive: "True"
   }
 };
-
-
-// const externalPayload = {
-//   Request: {
-//     requestDate: "2025-07-05T14:50:00",
-//     extTransactionId: "0001",
-//     systemId: "priyads",
-//     password: "Priya@2025",
-//     UAN: "ggw0VGWp",
-//     UserType: "Staff"
-//   },
-//   Funnel: {
-//     Name: "Kaisher",
-//     Address: "HSR Layout road",
-//     ServiceType: "Broadband",
-//     City: "Benguluru",
-//     State: "Karnatka",
-//     Nation: "India",
-//     ZipCode: "380009",
-//     MobileNo: "7061409421",
-//     EMail: "cto@levontechno.com",
-//     Plan: "",
-//     ReferralUserId: "",
-//     ReferralEmployeeName: "",
-//     ReferralEmployeeID: "",
-//     ReferralMobile: "",
-//     Source: "",
-//     ReferralCompanyId: "",
-//     NotificationReceive: "True"
-//   }
-// };
 
 
 // Send the POST request
