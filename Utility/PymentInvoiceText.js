@@ -14,12 +14,15 @@ export const paymenInvoiceText = (transaction) => {
     card_type,
     card_network,
     bank,
+    planDetails,
     vpa,
     _id
   } = transaction;
 
   const date = new Date(created_at * 1000).toLocaleDateString(); // readable date
   const time = new Date(created_at * 1000).toLocaleTimeString(); // readable time
+
+   const planName = planDetails?.["Plan Name"] || "N/A";// Extract plan name from planDetails
 
   return `<!DOCTYPE html>
 <html>
@@ -140,6 +143,7 @@ export const paymenInvoiceText = (transaction) => {
     </div>
 
     <div class="details">
+      <div class="details-row"><span>Plan:</span><div>${planName}</div></div>
       <div class="details-row"><span>Service:</span><div>${serviceNeeded}</div></div>
       <div class="details-row"><span>Address:</span><div>${address}</div></div>
       <div class="details-row"><span>Amount Paid (₹):</span><div>${amount}</div></div>
@@ -171,6 +175,7 @@ export const paymenInvoiceFailedText = (transaction) => {
     paymentStatus,
     razorpayOrderId,
     razorpayPaymentId,
+    planDetails,
     created_at,
     vpa,
     _id
@@ -178,6 +183,8 @@ export const paymenInvoiceFailedText = (transaction) => {
 
   const date = new Date(created_at * 1000).toLocaleDateString();
   const time = new Date(created_at * 1000).toLocaleTimeString();
+
+     const planName = planDetails?.["Plan Name"] || "N/A";
 
   return `<!DOCTYPE html>
 <html>
@@ -298,6 +305,7 @@ export const paymenInvoiceFailedText = (transaction) => {
     </div>
 
     <div class="details">
+      <div class="details-row"><span>Plan:</span><div>${planName}</div></div>
       <div class="details-row"><span>Service:</span><div>${serviceNeeded}</div></div>
       <div class="details-row"><span>Address:</span><div>${address}</div></div>
       <div class="details-row"><span>Attempted Amount (₹):</span><div>${amount}</div></div>
