@@ -1,5 +1,9 @@
 import express from "express";
 import "dotenv/config";
+// server.js
+import dotenv from "dotenv";
+dotenv.config(); // ✅ Load .env at app start
+
 import connectDB from "./config/DBConfig.js";
 import router from "./routes/index.js";
 import cors from "cors";
@@ -7,6 +11,9 @@ import helmet from'helmet';
 import { apiLimiter } from "./config/rateLimiter.js";
 const app = express();
 const PORT = process.env.PORT;
+
+
+
 
 //trust proxy
 app.set('trust proxy', 1);

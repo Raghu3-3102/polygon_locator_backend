@@ -3,6 +3,8 @@ const router = express.Router();
 import zoneRouters from "./zoneRoutes/zoneRoutes.js"
 import zonePaymentRouters from "./ZonePaymentRoutes/ZonePayment.js";
 import RazorPayAdminRouters from   "./RazorPayAdminRoute/RazorPayAdmin.js";
+import userAuthRoutes from "./UserAuth/UserAuthRoutes.js";
+
 
 const defaultRoutes = [
     {
@@ -18,6 +20,11 @@ const defaultRoutes = [
         route: RazorPayAdminRouters
       
     },
+    {
+        path: "/user-auth",
+        route: userAuthRoutes
+
+    }
     
 ];
 

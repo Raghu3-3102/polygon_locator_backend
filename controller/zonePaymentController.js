@@ -4,23 +4,42 @@ import dotenv from "dotenv";
 import Zone from "../models/Zone.js";
 import PaymentTransaction from "../models/PaymentTransaction.model.js";
 import { point as turfPoint, booleanPointInPolygon } from "@turf/turf";
+import { sendEmail,sendFailedPaymentEmail } from "../Utility/sendMail.js";
+import {sucessfullPayment,FailedPayment} from '../mailText/invoiceMailText.js'
+import {paymenInvoiceText,paymenInvoiceFailedText} from '../Utility/PymentInvoiceText.js'
+import {generatePDF} from "../Utility/genratePdf.js";
+import axios from "axios";
 
 dotenv.config();
+
+
 
 export const initiateZonePayment = async (req, res) => {
   try {
     const {
        name, email, phoneNumber, dob,
       serviceNeeded, address, amount,zoneId,
-      planId // contains full plan info
+      planId,city,state, nation,zipCode// contains full plan info
     } = req.body;
 
-    if (!name || !email || !phoneNumber || !dob || !serviceNeeded || !address || !amount || !zoneId || !planId) {
+    if (!name || !email || !phoneNumber || !dob || !serviceNeeded || !address || !amount || !zoneId || !planId || !city || !state || !nation || !zipCode) {
       return res.status(400).json({
         success: false,
         error: "All fields are required"
       })
     }
+
+    //validate phone number 
+  const phoneRegex = /^[6-9]\d{9}$/;
+  const flagPhone =  phoneRegex.test(phoneNumber);
+
+  if (!flagPhone) {
+    res.status(400).json({ 
+      success: false,
+      error: "Phone number is invalid",
+       });
+    }
+    
 
     // Validate the zoneId
     const matchedZone = await Zone.findById(zoneId);
@@ -43,8 +62,10 @@ export const initiateZonePayment = async (req, res) => {
         error: "Plan not found in the specified zone"
       });
     }
-    console.log("Matched Plan:", matchedPlan);
+   
 
+    const planName = matchedPlan['Plan Name'];
+    
 
     const basePrice = amount;
 
@@ -66,15 +87,21 @@ export const initiateZonePayment = async (req, res) => {
       dob,
       serviceNeeded,
       address,
+      city,
+      state,
+      nation,
+      zipCode,
       zoneId: matchedZone._id,
       planId:matchedPlan._id, // Store the plan ID
+      planName: planName, // Store the plan name
       amount: basePrice,
       razorpayOrderId: razorpayOrder.id,
       currency: "INR",
       paymentStatus: "Pending",
       status: "created",
       created_at: Math.floor(Date.now() / 1000),
-      flow: "web"
+      flow: "web",
+      
     });
 
     res.json({
@@ -115,7 +142,18 @@ export const confirmZonePayment = async (req, res) => {
 
     if (expectedSignature !== razorpaySignature) {
       transaction.paymentStatus = "Failed";
-      await transaction.save();
+      
+       await transaction.save();
+
+      const failedPaymentText = FailedPayment(transaction.name, transaction.amount, transaction.razorpayOrderId);
+      const pdfText = paymenInvoiceFailedText(transaction);
+      const pdfBuffer = await generatePDF(pdfText);
+      console.log("PDF generated successfully",pdfBuffer);
+
+      await sendFailedPaymentEmail(transaction.email, failedPaymentText, process.env.MAIL_USER, process.env.MAIL_PASS, pdfBuffer);
+
+
+     
       return res.status(400).json({ 
         success: false,
         error: "Invalid Razorpay signature" 
@@ -164,11 +202,114 @@ export const confirmZonePayment = async (req, res) => {
 
     await transaction.save();
 
+    
+
+// Build external API payload
+    const externalPayload = {
+    Request: {
+    requestDate: "2025-07-05T14:50:00",
+    extTransactionId: "0001",
+    systemId: "priyads",
+    password: "Priya@2025",
+    UAN: "ggw0VGWp",
+    UserType: "Staff"
+  },
+     Funnel: {
+    Name: transaction.name,
+    Address: transaction.address,
+    ServiceType: transaction.serviceNeeded,
+    City: transaction.city,
+    State: transaction.state,
+    Nation: transaction.nation,
+    ZipCode: transaction.zipCode,
+    MobileNo: transaction.phoneNumber,
+    EMail: transaction.email,
+    Plan:transaction.planName, // or extract from planId if needed
+    ReferralUserId: "",
+    ReferralEmployeeName: "",
+    ReferralEmployeeID: "",
+    ReferralMobile: "",
+    Source: "",
+    ReferralCompanyId: "",
+    NotificationReceive: "True"
+  }
+};
+
+
+// const externalPayload = {
+//   Request: {
+//     requestDate: "2025-07-05T14:50:00",
+//     extTransactionId: "0001",
+//     systemId: "priyads",
+//     password: "Priya@2025",
+//     UAN: "ggw0VGWp",
+//     UserType: "Staff"
+//   },
+//   Funnel: {
+//     Name: "Kaisher",
+//     Address: "HSR Layout road",
+//     ServiceType: "Broadband",
+//     City: "Benguluru",
+//     State: "Karnatka",
+//     Nation: "India",
+//     ZipCode: "380009",
+//     MobileNo: "7061409421",
+//     EMail: "cto@levontechno.com",
+//     Plan: "",
+//     ReferralUserId: "",
+//     ReferralEmployeeName: "",
+//     ReferralEmployeeID: "",
+//     ReferralMobile: "",
+//     Source: "",
+//     ReferralCompanyId: "",
+//     NotificationReceive: "True"
+//   }
+// };
+
+
+// Send the POST request
+try {
+  const response = await axios.post(
+    "https://liveon.nedataa.com/api/extservice.asmx/CreateFunnel",
+    externalPayload,
+    {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
+
+  console.log("✅ External API response:", response.data);
+} catch (error) {
+  console.error("❌ Error calling external API:", error.message);
+}
+
+
+    try {
+
+    const sendEmailtexts = sucessfullPayment(transaction.amount,transaction.name)
+    const pdfText = paymenInvoiceText(transaction)
+
+    const pdfBuffer = await generatePDF(pdfText);
+    console.log("PDF generated successfully",pdfBuffer);
+    // Send the PDF as an attachment
+
+    await sendEmail(transaction.email,sendEmailtexts ,process.env.MAIL_USER, process.env.MAIL_PASS ,pdfBuffer);
+    console.log("Email sent successfully");
+      
+    } catch (error) {
+    console.error("❌ Error sending email:", error.message);
+    // Handle email sending error, but don't block the payment confirmation
+    }
+
+   
     res.json({
       success: true,
       message: "Payment confirmed",
       transaction
     });
+
+    
 
   } catch (err) {
     console.error("❌ Confirm payment error:", err.message);
@@ -183,10 +324,22 @@ export const confirmZonePayment = async (req, res) => {
 
 const getAllPayments = async (req, res) => {
   try {
-    const transactions = await PaymentTransaction.find().populate("zoneId");
-    
+    const { page = 1, limit = 10 } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    const total = await PaymentTransaction.countDocuments();
+    const transactions = await PaymentTransaction.find()
+      .populate("zoneId")
+      .sort({ createdAt: -1 }) // optional: sort latest first
+      .skip(parseInt(skip))
+      .limit(parseInt(limit));
+
     res.status(200).json({
       success: true,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(total / limit),
+      totalRecords: total,
       count: transactions.length,
       data: transactions
     });
@@ -198,6 +351,7 @@ const getAllPayments = async (req, res) => {
     });
   }
 };
+
 
  const getPaymentByTransactionId = async (req, res) => {
   try {
