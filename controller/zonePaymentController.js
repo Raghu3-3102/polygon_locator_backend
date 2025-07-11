@@ -174,8 +174,8 @@ export const confirmZonePayment = async (req, res) => {
 
     await transaction.save();
 
-    const planName = transaction.planDetails?.["Plan Name"] || "N/A"; // Extract plan name from planDetails
-
+    const planName = transaction.planDetails?.planName || "N/A"; // Extract plan name from planDetails
+     console.log("Transaction updated:", planName);
 // Build external API payload
     const externalPayload = {
     Request: {

@@ -22,7 +22,7 @@ export const paymenInvoiceText = (transaction) => {
   const date = new Date(created_at * 1000).toLocaleDateString(); // readable date
   const time = new Date(created_at * 1000).toLocaleTimeString(); // readable time
 
-   const planName = planDetails?.["Plan Name"] || "N/A";// Extract plan name from planDetails
+   const planName = transaction.planDetails?.planName || "N/A";// Extract plan name from planDetails
 
   return `<!DOCTYPE html>
 <html>
@@ -184,7 +184,7 @@ export const paymenInvoiceFailedText = (transaction) => {
   const date = new Date(created_at * 1000).toLocaleDateString();
   const time = new Date(created_at * 1000).toLocaleTimeString();
 
-     const planName = planDetails?.["Plan Name"] || "N/A";
+     const planName = transaction.planDetails?.planName|| "N/A";
 
   return `<!DOCTYPE html>
 <html>
