@@ -271,7 +271,6 @@ const getAllPayments = async (req, res) => {
 
     const total = await PaymentTransaction.countDocuments();
     const transactions = await PaymentTransaction.find()
-      .populate("zoneId")
       .sort({ createdAt: -1 }) // optional: sort latest first
       .skip(parseInt(skip))
       .limit(parseInt(limit));
@@ -298,7 +297,7 @@ const getAllPayments = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const transaction = await PaymentTransaction.findById(id).populate("zoneId");
+    const transaction = await PaymentTransaction.findById(id);
 
     if (!transaction) {
       return res.status(404).json({
