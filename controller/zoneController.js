@@ -22,14 +22,14 @@ const checkLocation = async (req, res) => {
       };
 
       if (booleanPointInPolygon(userPoint, polygonFeature)) {
-        return res.satus(200).json({
+        return res.status(200).json({
           matched: true,
         });
       }
     }
 
     // No match found
-    return res.satus(400).json({
+    return res.status(400).json({
       matched: false,
       message: "Coming soon to your area",
     });
