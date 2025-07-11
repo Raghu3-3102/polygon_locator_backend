@@ -19,8 +19,17 @@ export const paymenInvoiceText = (transaction) => {
     _id
   } = transaction;
 
-  const date = new Date(created_at * 1000).toLocaleDateString(); // readable date
-  const time = new Date(created_at * 1000).toLocaleTimeString(); // readable time
+       const date = new Date(created_at * 1000).toLocaleDateString('en-IN', {
+       timeZone: 'Asia/Kolkata'
+     });
+
+   const time = new Date(created_at * 1000).toLocaleTimeString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+       hour: '2-digit',
+       minute: '2-digit',
+      second: '2-digit'
+      });
+
 
    const planName = transaction.planDetails?.planName || "N/A";// Extract plan name from planDetails
 
@@ -181,8 +190,17 @@ export const paymenInvoiceFailedText = (transaction) => {
     _id
   } = transaction;
 
-  const date = new Date(created_at * 1000).toLocaleDateString();
-  const time = new Date(created_at * 1000).toLocaleTimeString();
+     const date = new Date(created_at * 1000).toLocaleDateString('en-IN', {
+       timeZone: 'Asia/Kolkata'
+     });
+
+   const time = new Date(created_at * 1000).toLocaleTimeString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+       hour: '2-digit',
+       minute: '2-digit',
+      second: '2-digit'
+      });
+
 
      const planName = transaction.planDetails?.planName|| "N/A";
 
