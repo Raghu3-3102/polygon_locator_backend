@@ -1,10 +1,9 @@
-import { planepoint } from "@turf/turf";
 import mongoose from "mongoose";
 
 const paymentTransactionSchema = new mongoose.Schema({
   // 🧑 User Info
   name: { type: String, required: true },
-  email: { type: String, required: true },              // From form
+  email: { type: String, required: true },
   phoneNumber: { type: String, required: true },
   dob: { type: String },
   serviceNeeded: { type: String, required: true },
@@ -14,10 +13,14 @@ const paymentTransactionSchema = new mongoose.Schema({
   nation: { type: String },
   zipCode: { type: String },
 
-  // 🗺️ Zone Info
-  zoneId: { type: mongoose.Schema.Types.ObjectId, ref: "Zone" },
-  planId: { type: mongoose.Schema.Types.ObjectId, require:true }, // Store the plan ID
-  planName: { type: String, required: true }, // Store the plan name
+  // 📝 Plan Details (Grouped)
+  planDetails: {
+    planName: { type: String, required: true },         // "AIRWIRE_SILVER@6M"
+    duration: { type: String },                         // "210 Day"
+    mrp: { type: Number },                              // 4949.00
+    primaryUploadSpeedMbps: { type: Number },           // 100
+    primaryDownloadSpeedMbps: { type: Number },         // 100
+  },
 
   // 💳 Razorpay Core Info
   razorpayOrderId: String,
@@ -25,7 +28,7 @@ const paymentTransactionSchema = new mongoose.Schema({
   razorpaySignature: String,
 
   // ✅ Razorpay Complete Fields
-  razorpayId: String, // Razorpay Payment ID (use this instead of "id")
+  razorpayId: String,
   amount: Number,
   currency: String,
   status: String,
