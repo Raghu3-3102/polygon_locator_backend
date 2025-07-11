@@ -29,6 +29,18 @@ export const initiateZonePayment = async (req, res) => {
       })
     }
 
+    //validate phone number 
+  const phoneRegex = /^[6-9]\d{9}$/;
+  const flagPhone =  phoneRegex.test(phoneNumber);
+
+  if (!flagPhone) {
+    res.status(400).json({ 
+      success: false,
+      error: "Phone number is invalid",
+       });
+    }
+    
+
     // Validate the zoneId
     const matchedZone = await Zone.findById(zoneId);
     if (!matchedZone) {
