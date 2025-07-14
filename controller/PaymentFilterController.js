@@ -58,9 +58,7 @@ const PaymentServicePlancontroller = async (req, res) => {
     try {
         
         const {zoneId,planId }= req.query;
-        console.log("Received zoneId:", zoneId);
-       
-        console.log("Received planId:", planId);
+        
         if (!planId) {
             return res.status(400).json({ success: false, error: "Plan ID query parameter is required" });
         }
@@ -70,7 +68,7 @@ const PaymentServicePlancontroller = async (req, res) => {
             zoneId: new mongoose.Types.ObjectId(zoneId) 
         },)
 
-        console.log("Payment transactions for plan ID fetched successfully:", paymentTransactions);
+        
 
         return res.status(200).json({ success: true, data: paymentTransactions });
 
