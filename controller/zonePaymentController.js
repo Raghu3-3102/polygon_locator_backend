@@ -220,6 +220,14 @@ try {
     }
   );
 
+     const externalApiResult = response.data?.d || null;
+     console.log("✅ External API response:", externalApiResult);
+
+    // ✅ Save API response to DB
+     transaction.externalFunnelResponse = externalApiResult;
+     await transaction.save();
+
+
   console.log("✅ External API response:", response.data);
 } catch (error) {
   console.error("❌ Error calling external API:", error.message);

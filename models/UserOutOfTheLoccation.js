@@ -22,6 +22,12 @@ const UserOutOfTheLocation = new mongoose.Schema({
     primaryDownloadSpeedMbps: { type: Number },         // 100
   },
 
+   // ✅ Add this field for API response
+  externalFunnelResponse: {
+    type: Object,
+    default: null
+  }
+
 });
 
 export default mongoose.model("UserOutOfTheLocation",UserOutOfTheLocation);

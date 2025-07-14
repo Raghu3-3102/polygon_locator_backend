@@ -22,6 +22,13 @@ const paymentTransactionSchema = new mongoose.Schema({
     primaryDownloadSpeedMbps: { type: Number },         // 100
   },
 
+  //externalFunnelResponse:
+
+   externalFunnelResponse: {
+    type: Object,
+    default: null
+  },
+
   // 💳 Razorpay Core Info
   razorpayOrderId: String,
   razorpayPaymentId: String,

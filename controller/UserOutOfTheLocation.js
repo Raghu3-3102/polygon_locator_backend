@@ -93,6 +93,13 @@ const UserOutOfTheLocationController = async (req, res) => {
           }
         }
       );
+
+      const externalApiResult = response.data?.d || null;
+       console.log("✅ External API response:", externalApiResult);
+
+      // ✅ Save API response to DB
+     savedUser.externalFunnelResponse = externalApiResult;
+      await savedUser.save();
       console.log("✅ External API response:", response.data);
     } catch (apiError) {
       console.error("❌ Error calling external API:", apiError.message);
