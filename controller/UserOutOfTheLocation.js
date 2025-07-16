@@ -180,4 +180,130 @@ const getUserByIdOutOfLocation = async (req, res) => {
 }
 
 
-export default { UserOutOfTheLocationController, getAlluserOutOfLocationData,getUserByIdOutOfLocation };
+export const getUsersByCityOrState = async (req, res) => {
+  try {
+    const { city, state } = req.query;
+
+    const filter = {};
+    if (city) filter.city = city;
+    if (state) filter.state = state;
+
+    const users = await UserOutOfTheLoccation.find(filter);
+
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      users,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching users",
+    });
+  }
+};
+
+
+
+export const getZipCodeDistribution = async (req, res) => {
+  try {
+    const zipSummary = await UserOutOfTheLoccation.aggregate([
+      {
+        $group: {
+          _id: "$zipCode",
+          userCount: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { userCount: -1 } // Optional: Sort by highest count
+      }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      summary: zipSummary.map(item => ({
+        zipCode: item._id,
+        userCount: item.userCount
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error getting zip code distribution",
+      error: error.message
+    });
+  }
+};
+
+export const getCityDistribution = async (req, res) => {
+  try {
+    const citySummary = await UserOutOfTheLoccation.aggregate([
+      {
+        $group: {
+          _id: "$city", // Group by city field
+          userCount: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { userCount: -1 } // Sort cities with most requests first
+      }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      summary: citySummary.map(item => ({
+        city: item._id,
+        userCount: item.userCount
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error getting city distribution",
+      error: error.message
+    });
+  }
+};
+
+export const getStateDistribution = async (req, res) => {
+  try {
+    const stateSummary = await UserOutOfTheLoccation.aggregate([
+      {
+        $group: {
+          _id: "$state", // Group by state field
+          userCount: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { userCount: -1 } // Sort by most user requests
+      }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      summary: stateSummary.map(item => ({
+        state: item._id,
+        userCount: item.userCount
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error getting state distribution",
+      error: error.message
+    });
+  }
+};
+
+
+
+
+export default { UserOutOfTheLocationController, 
+                 getAlluserOutOfLocationData,
+                 getUserByIdOutOfLocation ,
+                 getUsersByCityOrState,
+                 getZipCodeDistribution,
+                 getCityDistribution,
+                 getStateDistribution
+                
+                };
