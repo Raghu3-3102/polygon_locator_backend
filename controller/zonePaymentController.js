@@ -20,7 +20,7 @@ export const initiateZonePayment = async (req, res) => {
       name, email, phoneNumber, dob,
       serviceNeeded, address, amount,
       city, state, nation, zipCode,
-      planDetails // Directly passed from frontend
+      planDetails,serviceCharge // Directly passed from frontend
     } = req.body;
 
     // Validate required fields
@@ -66,6 +66,7 @@ export const initiateZonePayment = async (req, res) => {
       nation,
       zipCode,
       amount,
+      serviceCharge,
       razorpayOrderId: razorpayOrder.id,
       currency: "INR",
       paymentStatus: "Pending",
@@ -328,6 +329,9 @@ const getAllPayments = async (req, res) => {
   }
 };
 
+
+
+
 const editPaymentStatus = async (req,res) =>{
 
   try {
@@ -373,5 +377,8 @@ const editPaymentStatus = async (req,res) =>{
   }
 
 }
+
+
+
 export default {initiateZonePayment,confirmZonePayment,getAllPayments,getPaymentByTransactionId,editPaymentStatus}
 

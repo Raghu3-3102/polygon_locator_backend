@@ -135,6 +135,7 @@ const getAlluserOutOfLocationData = async (req, res) => {
 
     // Fetch paginated data (includes _id by default)
     const userOutOfLocation = await UserOutOfTheLoccation.find()
+     .sort({ _id: -1 }) // Newest first using ObjectID
       
 
     return res.status(200).json({

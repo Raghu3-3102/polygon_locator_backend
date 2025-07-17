@@ -5,7 +5,7 @@ import zonePaymentRouters from "./ZonePaymentRoutes/ZonePayment.js";
 import RazorPayAdminRouters from   "./RazorPayAdminRoute/RazorPayAdmin.js";
 import userAuthRoutes from "./UserAuth/UserAuthRoutes.js";
 import UserOutOfTheLocationRouter from "./UserOutOfTheLocationRouter/UserOutOfTheLocationRoute.js";
-
+import servicecePlan from "./ServicePlanCharge/ServicePlanCharge.js";
 
 const defaultRoutes = [
     {
@@ -29,6 +29,11 @@ const defaultRoutes = [
      {
         path: "/user-out-of-location",
         route: UserOutOfTheLocationRouter
+
+    },
+     {
+        path: "/service-Charge",
+        route: servicecePlan
 
     }
     

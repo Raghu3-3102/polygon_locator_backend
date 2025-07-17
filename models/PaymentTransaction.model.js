@@ -23,6 +23,10 @@ const paymentTransactionSchema = new mongoose.Schema({
   },
 
   //externalFunnelResponse:
+  serviceCharge: {
+    type: Number,
+    default: 0
+  },
 
    externalFunnelResponse: {
     type: Object,

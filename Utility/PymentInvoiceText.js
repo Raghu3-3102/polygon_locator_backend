@@ -6,6 +6,7 @@ export const paymenInvoiceText = (transaction) => {
     address,
     serviceNeeded,
     amount,
+    serviceCharge,
     paymentStatus,
     razorpayOrderId,
     razorpayPaymentId,
@@ -155,6 +156,8 @@ export const paymenInvoiceText = (transaction) => {
       <div class="details-row"><span>Plan:</span><div>${planName}</div></div>
       <div class="details-row"><span>Service:</span><div>${serviceNeeded}</div></div>
       <div class="details-row"><span>Address:</span><div>${address}</div></div>
+       <div class="details-row"><span>Plan Price (₹):</span><div>${amount - serviceCharge}</div></div>
+       <div class="details-row"><span>Service Charge (₹):</span><div>${serviceCharge}</div></div>
       <div class="details-row"><span>Amount Paid (₹):</span><div>${amount}</div></div>
       <div class="details-row"><span>Payment Method:</span><div>${transaction.method || 'Not Available'}</div></div>
       <div class="details-row"><span>Payment Status:</span><div>${paymentStatus}</div></div>
