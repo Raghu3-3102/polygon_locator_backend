@@ -160,7 +160,7 @@ export const paymenInvoiceText = (transaction) => {
        <div class="details-row"><span>Plan Price (₹):</span><div>${amount - serviceCharge}</div></div>
        <div class="details-row"><span>Service Charge (₹):</span><div>${serviceCharge}</div></div>
       <div class="details-row"><span>Amount Paid (₹):</span><div>${amount}</div></div>
-      <div class="details-row"><span> Plan Duretion :</span><div>${duration} days</div></div>
+      <div class="details-row"><span> Plan Duretion :</span><div>${duration} </div></div>
       <div class="details-row"><span>Payment Method:</span><div>${transaction.method || 'Not Available'}</div></div>
       <div class="details-row"><span>Payment Status:</span><div>${paymentStatus}</div></div>
       <div class="details-row"><span>Razorpay Order ID:</span><div>${razorpayOrderId}</div></div>

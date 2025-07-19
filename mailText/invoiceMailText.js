@@ -67,7 +67,7 @@ export const sucessfullPayment = (amount, name,duration) => {
       <div class="content">
         <p>Thanks for choosing <strong>Airwire</strong>.</p>
         <p>We have successfully received your payment. This email serves as a confirmation of your transaction with Airwire.</p>
-        <p>You have paid <strong>₹${amount}</strong> for a <strong>${duration}-day</strong> service plan. We appreciate your trust in us.</p>
+        <p>You have paid <strong>₹${amount}</strong> for a <strong>${duration}</strong> service plan. We appreciate your trust in us.</p>
         <p>This is your official payment invoice. For your reference and record-keeping, we have attached a PDF copy of the invoice to this email.</p>
         <p>If you have any questions or need support, feel free to contact our customer service team.</p>
         <p>Thank you once again for choosing Airwire.</p>
