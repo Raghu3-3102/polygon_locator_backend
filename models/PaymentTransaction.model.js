@@ -28,6 +28,11 @@ const paymentTransactionSchema = new mongoose.Schema({
     default: 0
   },
 
+  duration:{
+    type:Number,
+    required:true
+
+  },
    externalFunnelResponse: {
     type: Object,
     default: null

@@ -20,12 +20,12 @@ export const initiateZonePayment = async (req, res) => {
       name, email, phoneNumber, dob,
       serviceNeeded, address, amount,
       city, state, nation, zipCode,
-      planDetails,serviceCharge // Directly passed from frontend
+      duration,planDetails,serviceCharge // Directly passed from frontend
     } = req.body;
 
     // Validate required fields
     if (!name || !email || !phoneNumber || !dob || !serviceNeeded || !address ||
-        !amount || !city || !state || !nation || !zipCode || !planDetails) {
+        !amount || !city || !state || !nation || !zipCode || !planDetails || !duration) {
       return res.status(400).json({
         success: false,
         error: "All fields are required"
@@ -67,6 +67,7 @@ export const initiateZonePayment = async (req, res) => {
       zipCode,
       amount,
       serviceCharge,
+      duration,
       razorpayOrderId: razorpayOrder.id,
       currency: "INR",
       paymentStatus: "Pending",
@@ -237,7 +238,7 @@ try {
 
     try {
 
-    const sendEmailtexts = sucessfullPayment(transaction.amount,transaction.name)
+    const sendEmailtexts = sucessfullPayment(transaction.amount,transaction.name,transaction.duration)
     const pdfText = paymenInvoiceText(transaction)
 
     const pdfBuffer = await generatePDF(pdfText);
