@@ -22,7 +22,28 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // Enable CORS
-app.use(cors());
+
+const allowedOrigins = [
+  "https://airwire.in",
+  "https://airwire-dashboard.vercel.app",
+  "https://airwire.in/pricing"
+];
+
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true, // ✅ Allow sending cookies or Authorization headers
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: "Content-Type,Authorization", // ✅ Allow tokens in headers
+}));
+
+
 
 // Parse incoming requests with JSON payloads
 app.use(express.json({ limit:'10mb' }));
