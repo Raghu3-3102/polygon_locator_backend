@@ -191,7 +191,7 @@ export const confirmZonePayment = async (req, res) => {
      Funnel: {
     Name: transaction.name,
     Address: transaction.address,
-    ServiceType: 'Broadband',
+    ServiceType: transaction.serviceNeeded,
     City: transaction.city,
     State: transaction.state,
     Nation: transaction.nation,

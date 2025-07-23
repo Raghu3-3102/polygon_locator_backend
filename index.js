@@ -26,7 +26,8 @@ app.use(helmet());
 const allowedOrigins = [
   "https://airwire.in",
   "https://airwire-dashboard.vercel.app",
-  "https://airwire.in/pricing"
+  "https://airwire.in/pricing",
+  "http://localhost:3000"
 ];
 
 
