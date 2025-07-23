@@ -22,27 +22,33 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // Enable CORS
-
-const allowedOrigins = [
-  "https://airwire.in",
-  "https://airwire-dashboard.vercel.app",
-  "https://airwire.in/pricing",
-  "http://localhost:3000"
-];
-
-
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: "*", // Allow all origins for development; restrict in production
   credentials: true, // ✅ Allow sending cookies or Authorization headers
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: "Content-Type,Authorization", // ✅ Allow tokens in headers
 }));
+
+// const allowedOrigins = [
+//   "https://airwire.in",
+//   "https://airwire-dashboard.vercel.app",
+//   "https://airwire.in/pricing",
+//   "http://localhost:3000"
+// ];
+
+
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   credentials: true, // ✅ Allow sending cookies or Authorization headers
+//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//   allowedHeaders: "Content-Type,Authorization", // ✅ Allow tokens in headers
+// }));
 
 
 
