@@ -6,6 +6,7 @@ import PaymentTransaction from "../models/PaymentTransaction.model.js";
 import { Types } from "mongoose";
 import mongoose from "mongoose";
 import { point as turfPoint, booleanPointInPolygon } from "@turf/turf";
+import moment from "moment"; // Make sure moment is installed
 
 dotenv.config();
 
@@ -172,7 +173,161 @@ const getFilterdPymentByStatusAndMethod = async (req, res) => {
 
 
 
+const TotalPaidCustomer = async (req, res) => {
+  try {
+    const now = moment(); // current date
+    const startOfThisWeek = now.clone().startOf("isoWeek");
+    const startOfLastWeek = startOfThisWeek.clone().subtract(1, "weeks");
+    const endOfLastWeek = startOfThisWeek.clone().subtract(1, "days").endOf("day");
+
+    // Total Paid Customers (all time)
+    const totalPaidCustomers = await PaymentTransaction.countDocuments({ paymentStatus: "Paid" });
+
+    // This Week Paid Customers
+    const thisWeekPaid = await PaymentTransaction.countDocuments({
+      paymentStatus: "Paid",
+      createdAt: { $gte: startOfThisWeek.toDate(), $lte: now.toDate() }
+    });
+
+    // Last Week Paid Customers
+    const lastWeekPaid = await PaymentTransaction.countDocuments({
+      paymentStatus: "Paid",
+      createdAt: { $gte: startOfLastWeek.toDate(), $lte: endOfLastWeek.toDate() }
+    });
+
+    let percentageGrowth = 0;
+    let status = "No Change";
+
+    if (lastWeekPaid === 0 && thisWeekPaid > 0) {
+      percentageGrowth = thisWeekPaid * 100;
+      status = "Growth";
+    } else if (thisWeekPaid === 0 && lastWeekPaid > 0) {
+      percentageGrowth = -lastWeekPaid * 100;
+      status = "Decline";
+    } else if (lastWeekPaid > 0) {
+      const diff = thisWeekPaid - lastWeekPaid;
+      percentageGrowth = (diff / lastWeekPaid) * 100;
+      status = diff >= 0 ? "Growth" : "Decline";
+    }
+
+    return res.status(200).json({
+      success: true,
+      totalPaidCustomers,
+      thisWeekPaid,
+      lastWeekPaid,
+      percentageGrowth: `${percentageGrowth.toFixed(2)}%`,
+      status
+    });
+  } catch (error) {
+    console.error("Error in TotalPaidCustomer:", error);
+    return res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
 
 
 
-export default {PaymentStatusFilterController, PaymentServicePlancontroller,getFilteredPaymentData,getFilterdPymentByStatusAndMethod};
+
+const TotalPendingCustomer = async (req, res) => {
+  try {
+    const todayStart = moment().startOf("day");
+    const todayEnd = moment().endOf("day");
+
+    const yesterdayStart = moment().subtract(1, "days").startOf("day");
+    const yesterdayEnd = moment().subtract(1, "days").endOf("day");
+
+    const todayPending = await PaymentTransaction.countDocuments({
+      paymentStatus: "Pending",
+      createdAt: { $gte: todayStart.toDate(), $lte: todayEnd.toDate() }
+    });
+
+    const yesterdayPending = await PaymentTransaction.countDocuments({
+      paymentStatus: "Pending",
+      createdAt: { $gte: yesterdayStart.toDate(), $lte: yesterdayEnd.toDate() }
+    });
+
+    let percentageChange = "0.00%";
+    let status = "No Change";
+
+    if (yesterdayPending === 0 && todayPending > 0) {
+      percentageChange = `${(todayPending * 100).toFixed(2)}%`;
+      status = "Growth";
+    } else if (yesterdayPending > 0 && todayPending === 0) {
+      percentageChange = `${(-yesterdayPending * 100).toFixed(2)}%`;
+      status = "Decline";
+    } else if (yesterdayPending > 0) {
+      const change = ((todayPending - yesterdayPending) / yesterdayPending) * 100;
+      percentageChange = `${change.toFixed(2)}%`;
+      status = change > 0 ? "Growth" : change < 0 ? "Decline" : "No Change";
+    }
+
+    return res.status(200).json({
+      success: true,
+      todayPending,
+      yesterdayPending,
+      percentageChange,
+      status
+    });
+  } catch (error) {
+    console.error("Error in TotalPendingCustomer:", error);
+    return res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+
+
+const getMonthlyTransactionStats = async (req, res) => {
+  try {
+    const now = new Date();
+
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    const thisMonthTotalRecord = await PaymentTransaction.countDocuments({
+      createdAt: { $gte: startOfThisMonth },
+    });
+
+    const lastMonthTotalRecord = await PaymentTransaction.countDocuments({
+      createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth },
+    });
+
+    let percentageChange = "0.00%";
+    let status = "Neutral";
+
+    if (lastMonthTotalRecord === 0 && thisMonthTotalRecord > 0) {
+      percentageChange = `${(thisMonthTotalRecord * 100).toFixed(2)}%`;
+      status = "Growth";
+    } else if (lastMonthTotalRecord > 0 && thisMonthTotalRecord === 0) {
+      percentageChange = `${(-lastMonthTotalRecord * 100).toFixed(2)}%`;
+      status = "Decline";
+    } else if (lastMonthTotalRecord > 0 && thisMonthTotalRecord > 0) {
+      const change = thisMonthTotalRecord - lastMonthTotalRecord;
+      const percent = ((change / lastMonthTotalRecord) * 100).toFixed(2);
+      percentageChange = `${percent}%`;
+      status = change > 0 ? "Growth" : "Decline";
+    }
+
+    return res.status(200).json({
+      success: true,
+      thisMonthTotalRecord,
+      lastMonthTotalRecord,
+      percentageChange,
+      status,
+    });
+  } catch (error) {
+    console.error("Error in getMonthlyTransactionStats:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+};
+
+
+
+
+
+
+
+
+export default {PaymentStatusFilterController, PaymentServicePlancontroller,getFilteredPaymentData,getFilterdPymentByStatusAndMethod,TotalPaidCustomer,TotalPendingCustomer,getMonthlyTransactionStats};
