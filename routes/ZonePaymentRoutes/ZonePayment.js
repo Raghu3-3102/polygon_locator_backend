@@ -15,9 +15,9 @@ router.get("/filter/status",protect, PaymentFilterController.PaymentStatusFilter
 router.get("/filter/plan",protect, PaymentFilterController.PaymentServicePlancontroller);
 router.get("/filter/method",protect, PaymentFilterController.getFilteredPaymentData);
 router.get("/filter/status-and-method",protect, PaymentFilterController.getFilterdPymentByStatusAndMethod);
-router.get("/filter/total/paid", PaymentFilterController.TotalPaidCustomer);
-router.get("/filter/total/Pending", PaymentFilterController.TotalPendingCustomer);
-router.get("/filter/monthly-stats", PaymentFilterController.getMonthlyTransactionStats);
+router.get("/filter/total/paid",protect, PaymentFilterController.TotalPaidCustomer);
+router.get("/filter/total/Pending",protect, PaymentFilterController.TotalPendingCustomer);
+router.get("/filter/monthly-stats",protect, PaymentFilterController.getMonthlyTransactionStats);
 
 
 export default router;
