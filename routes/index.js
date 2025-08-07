@@ -7,6 +7,7 @@ import userAuthRoutes from "./UserAuth/UserAuthRoutes.js";
 import UserOutOfTheLocationRouter from "./UserOutOfTheLocationRouter/UserOutOfTheLocationRoute.js";
 import servicecePlan from "./ServicePlanCharge/ServicePlanCharge.js";
 import new_flow from "./New_Flow/New_flow.js";
+import ISP_ACCOUNT from "./ISP_ACCOUNT/IspUserRouter.js";
 
 const defaultRoutes = [
     {
@@ -40,6 +41,11 @@ const defaultRoutes = [
      {
         path: "/plan",
         route: new_flow
+
+    },
+    {
+        path: "/ISP",
+        route: ISP_ACCOUNT
 
     }
     
