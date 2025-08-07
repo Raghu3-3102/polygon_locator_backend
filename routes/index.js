@@ -6,6 +6,7 @@ import RazorPayAdminRouters from   "./RazorPayAdminRoute/RazorPayAdmin.js";
 import userAuthRoutes from "./UserAuth/UserAuthRoutes.js";
 import UserOutOfTheLocationRouter from "./UserOutOfTheLocationRouter/UserOutOfTheLocationRoute.js";
 import servicecePlan from "./ServicePlanCharge/ServicePlanCharge.js";
+import new_flow from "./New_Flow/New_flow.js";
 
 const defaultRoutes = [
     {
@@ -34,6 +35,11 @@ const defaultRoutes = [
      {
         path: "/service-Charge",
         route: servicecePlan
+
+    },
+     {
+        path: "/plan",
+        route: new_flow
 
     }
     
