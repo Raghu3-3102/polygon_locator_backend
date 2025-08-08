@@ -42,6 +42,19 @@ export const createIspAccount = async (req, res) => {
       });
     }
 
+    // ✅ Check for duplicate by email + phoneNumber
+    const existingUser = await IspUser.findOne({
+      email: email,
+      phoneNumber: phoneNumber
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists with this email and phone number"
+      });
+    }
+
     const userName = email.split('@')[0]; // Extract username from email
     console.log("Generated userName:", userName);
 
@@ -131,3 +144,19 @@ export const createIspAccount = async (req, res) => {
     });
   }
 };
+
+
+export const getIspAccount = async (req, res) => {
+  try {
+
+
+    
+  } catch (error) {
+    console.error("Error fetching ISP account:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching account",
+      error: error.message
+    });
+  }
+}
