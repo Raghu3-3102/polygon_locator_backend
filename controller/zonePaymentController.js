@@ -8,6 +8,7 @@ import { sendEmail,sendFailedPaymentEmail } from "../Utility/sendMail.js";
 import {sucessfullPayment,FailedPayment} from '../mailText/invoiceMailText.js'
 import {paymenInvoiceText,paymenInvoiceFailedText} from '../Utility/PymentInvoiceText.js'
 import {generatePDF} from "../Utility/genratePdf.js";
+import Plan from "../models/PlanDetails.js";
 import axios from "axios";
 
 dotenv.config();
@@ -20,15 +21,23 @@ export const initiateZonePayment = async (req, res) => {
       name, email, phoneNumber, dob,
       serviceNeeded, address, amount,
       city, state, nation, zipCode,
-      duration,planDetails,serviceCharge // Directly passed from frontend
+      duration,planDetails,serviceCharge,planId // Directly passed from frontend
     } = req.body;
 
     // Validate required fields
     if (!name || !email || !phoneNumber || !dob || !serviceNeeded || !address ||
-        !amount || !city || !state || !nation || !zipCode || !planDetails || !duration) {
+        !amount || !city || !state || !nation || !zipCode || !planDetails || !duration || !planId) {
       return res.status(400).json({
         success: false,
         error: "All fields are required"
+      });
+    }
+
+  const plan = await Plan.findById(planId);
+    if (!plan) {
+      return res.status(404).json({
+        success: false,
+        error: "Plan not found"
       });
     }
 
@@ -74,7 +83,8 @@ export const initiateZonePayment = async (req, res) => {
       status: "created",
       created_at: Math.floor(Date.now() / 1000),
       flow: "web",
-      planDetails
+      planDetails,
+      planId
     });
 
     res.json({

@@ -9,6 +9,7 @@ import servicecePlan from "./ServicePlanCharge/ServicePlanCharge.js";
 import new_flow from "./New_Flow/New_flow.js";
 import ISP_ACCOUNT from "./ISP_ACCOUNT/IspUserRouter.js";
 import Addlead from "./Add_Lead/AddLead.js";
+import PlanDetailsRouter from "./PlanDetails/PlanDetails.js";
 
 const defaultRoutes = [
     {
@@ -52,6 +53,11 @@ const defaultRoutes = [
     {
         path: "/lead",
         route:  Addlead
+
+    },
+    {
+        path: "/PlanData",
+        route:  PlanDetailsRouter
 
     }
     

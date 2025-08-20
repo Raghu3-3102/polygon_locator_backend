@@ -12,6 +12,7 @@ const paymentTransactionSchema = new mongoose.Schema({
   state: { type: String },
   nation: { type: String },
   zipCode: { type: String },
+  planId: { type: String, ref: "Plan" },
 
   // 📝 Plan Details (Grouped)
   planDetails: {
