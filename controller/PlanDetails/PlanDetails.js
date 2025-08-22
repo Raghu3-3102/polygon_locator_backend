@@ -6,7 +6,7 @@ export const createPlan = async (req, res) => {
     // Validate request body
     const {  PlanName, Duration, MRP, PrimaryUploadSpeedMbps, PrimaryDownloadSpeedMbps } = req.body;
     if (!PlanName || !Duration || !MRP || !PrimaryUploadSpeedMbps || !PrimaryDownloadSpeedMbps) {
-      return res.status(400).json({ message: "All fields are required" });  
+      return res.status(400).json({ message: "All fields are required bro" });  
     }
     // Create new plan
     const total = await Plan.countDocuments();
