@@ -1,4 +1,3 @@
-import fs from "fs";
 import { DOMParser } from "xmldom";
 import { kml as convertToGeoJSON } from "@tmcw/togeojson";
 import Zone from "../models/Zone.js";
@@ -39,21 +38,12 @@ const checkLocation = async (req, res) => {
   }
 };
 
-
 const importKML = async (req, res) => {
   try {
     const kmlBuffer = req.file?.buffer;
-    const propertiesInput = req.body?.properties;
 
-    if (!kmlBuffer || !propertiesInput) {
-      return res.status(400).json({ error: "Missing file or properties data" });
-    }
-
-    let sharedProperties;
-    try {
-      sharedProperties = JSON.parse(propertiesInput);
-    } catch (err) {
-      return res.status(400).json({ error: "Invalid JSON in 'properties'" });
+    if (!kmlBuffer) {
+      return res.status(400).json({ error: "Missing KML file" });
     }
 
     const kmlText = kmlBuffer.toString("utf-8");
@@ -75,7 +65,6 @@ const importKML = async (req, res) => {
 
       return Zone.create({
         zone: zoneName,
-        properties: sharedProperties,
         geometry: feature.geometry,
       });
     });
@@ -88,12 +77,5 @@ const importKML = async (req, res) => {
     res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 };
-
-
-
-
-
-
-
 
 export default {checkLocation,importKML}
