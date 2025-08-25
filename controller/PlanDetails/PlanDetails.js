@@ -11,6 +11,10 @@ export const createPlan = async (req, res) => {
     // Create new plan
     const total = await Plan.countDocuments();
 
+    var planTypeValue = req.body.planType.toUpperCase();
+    req.body.planType = planTypeValue;
+
+   
     console.log(total)
     let NewSrNo = total + 1; // Auto-increment SrNo based on current count
     req.body.SrNo = NewSrNo; // Assign SrNo to request body
@@ -59,8 +63,9 @@ export const getAllPlansByPlanType = async (req, res) => {
     // get query params or set defaults
     const page = parseInt(req.query.page) || 1;    // default page 1
     const limit = parseInt(req.query.limit) || 10; // default 10 per page
-    const planType = req.query.planType; // get planType from URL params
-    console.log(planType)
+    const planType = req.query.planType.toUpperCase();; // t planType from URL params
+    
+    
 
     const skip = (page - 1) * limit;
 
