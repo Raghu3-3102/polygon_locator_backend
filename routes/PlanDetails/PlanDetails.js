@@ -1,4 +1,4 @@
-import {createPlan,getAllPlans,getPlanById,updatePlan,deletePlan,deleteAllPlans,updatePlanBySrNo } from '../../controller/PlanDetails/PlanDetails.js';
+import {createPlan,getAllPlans,getPlanById,updatePlan,deletePlan,deleteAllPlans,updatePlanBySrNo ,getAllPlansByPlanType} from '../../controller/PlanDetails/PlanDetails.js';
 import express from "express";
 const router = express.Router();
 // Ensure you have the auth middleware for protected routes
@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post("/create", createPlan);
 router.get("/getAll", getAllPlans);
+router.get("/getAllByPlan", getAllPlansByPlanType);
 router.get("/get/:id", getPlanById);
 router.put("/update/:id", updatePlan);
 router.delete("/delete/:id", deletePlan);

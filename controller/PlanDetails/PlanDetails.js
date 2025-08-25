@@ -38,7 +38,7 @@ export const getAllPlans = async (req, res) => {
     
 
     // fetch paginated data
-    const plans = await Plan.find()
+    const plans = await Plan.find({Plan})
       .skip(skip)
       .limit(limit);
 
@@ -53,6 +53,40 @@ export const getAllPlans = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const getAllPlansByPlanType = async (req, res) => {
+  try {
+    // get query params or set defaults
+    const page = parseInt(req.query.page) || 1;    // default page 1
+    const limit = parseInt(req.query.limit) || 10; // default 10 per page
+    const planType = req.query.planType; // get planType from URL params
+    console.log(planType)
+
+    const skip = (page - 1) * limit;
+
+    // get total count
+    const total = await Plan.countDocuments({});
+
+    
+
+    // fetch paginated data
+    const plans = await Plan.find({ planType:planType })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      total,                // total records
+      page,                 // current page
+      limit,                // records per page
+      totalPages: Math.ceil(total / limit),
+      data: plans           // actual plans
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
 
 
 // Get Plan by ID
