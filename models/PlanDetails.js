@@ -7,7 +7,8 @@ const planSchema = new mongoose.Schema({
   Duration: String,
   MRP: Number,
   PrimaryUploadSpeedMbps: Number,
-  PrimaryDownloadSpeedMbps: Number
+  PrimaryDownloadSpeedMbps: Number,
+   planType: String   
 });
 
 const Plan = mongoose.model("Plan", planSchema);

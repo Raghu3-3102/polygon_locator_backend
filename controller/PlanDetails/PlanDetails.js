@@ -4,9 +4,9 @@ import Plan from "../../models/PlanDetails.js";
 export const createPlan = async (req, res) => {
   try {
     // Validate request body
-    const {  PlanName, Duration, MRP, PrimaryUploadSpeedMbps, PrimaryDownloadSpeedMbps } = req.body;
-    if (!PlanName || !Duration || !MRP || !PrimaryUploadSpeedMbps || !PrimaryDownloadSpeedMbps) {
-      return res.status(400).json({ message: "All fields are required bro" });  
+    const {  PlanName, Duration, MRP, PrimaryUploadSpeedMbps, PrimaryDownloadSpeedMbps , planType} = req.body;
+    if (!PlanName || !Duration || !MRP || !PrimaryUploadSpeedMbps || !PrimaryDownloadSpeedMbps || !planType) {
+      return res.status(400).json({ message: "All fields are required" });  
     }
     // Create new plan
     const total = await Plan.countDocuments();
